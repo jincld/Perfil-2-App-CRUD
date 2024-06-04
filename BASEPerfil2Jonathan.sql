@@ -1,0 +1,16 @@
+CREATE TABLE Usuario(
+UUID INT PRIMARY KEY,
+NombreUsuario VARCHAR2(50),
+Contrasena VARCHAR2(50)
+)
+
+CREATE TABLE TICKET(
+UUID INT PRIMARY KEY,
+Titulo VARCHAR2(50),
+Descripcion VARCHAR2(100),
+Autor VARCHAR2(50),
+EmailAutor VARCHAR2(50),
+FechaCreacion VARHCAR2(50),
+Estado VARCHAR2(50),
+FechaFinalizacion VARCHAR2(50)
+)
