@@ -3,6 +3,7 @@ package RecyclerViewsHelper
 import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import jonathan.orellana.appcrudperfil2.R
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,12 @@ class Adaptador(var Datos: List<DataClassTicket>): RecyclerView.Adapter<ViewHold
     fun ActualizarLista(nuevaLista: List<DataClassTicket>) {
         Datos = nuevaLista
         notifyDataSetChanged()//notifica al recycle que hay datos nuevos
+    }
+
+    fun actualizarPantalla(UUID: String, nuevoNumero: Int){
+        val index = Datos.indexOfFirst { it.UUID == UUID }
+        Datos[index].Numero = nuevoNumero.toString()
+        notifyDataSetChanged()
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         //unir card con rcv
@@ -61,6 +68,53 @@ class Adaptador(var Datos: List<DataClassTicket>): RecyclerView.Adapter<ViewHold
             dialog.show()
         }
 
+        //todo: click icono editar
+        holder.btnEditarCard.setOnClickListener() {
+
+            val context = holder.itemView.context
+
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle("Editar")
+            builder.setMessage("¿Desea editar el ticket?")
+
+            //Cuadro de texto
+            val cuadroTexto = EditText(context)
+            cuadroTexto.setHint(ticket.Numero)
+            cuadroTexto.setHint(ticket.Titulo)
+            builder.setView(cuadroTexto)
+
+            //Botones
+
+            builder.setPositiveButton("si") { dialog, which ->
+                updateTicket(cuadroTexto.text.toString(), ticket.UUID.toInt(), ticket.Titulo, ticket.Descripcion, ticket.Autor, ticket.EmailAutor, ticket.FechaCreacion, ticket.Estado, ticket.FechaFinalizacion)
+            }
+
+            builder.setNegativeButton("No") { dialog, which ->
+                dialog.dismiss()
+            }
+
+            val dialog = builder.create()
+            dialog.show()
+        }
+
+    }
+    ////////TODO: EDITAR DATOS
+    fun updateTicket(UUID: String, nuevoNumero: Int, nuevoTitulo: String, nuevaDescripcion: String, nuevoAutor: String, nuevoEmail: String, nuevaFechaCreacion: String, nuevoEstado: String, nuevaFechaFinalizacion: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            //crear objeto de clase conexion
+            val objConexion = ClaseConexion().cadenaConexion()
+
+            //crear variable con prepare statement
+            val updateTicket = objConexion?.prepareStatement("update tbTicket set Numero = ? Titulo = ? where UUID = ?")!!
+            updateTicket.setInt(1, nuevoNumero)
+            updateTicket.setString(2, nuevoTitulo)
+            updateTicket.setString(3, UUID)
+            updateTicket.executeUpdate()
+
+            withContext(Dispatchers.Main){
+                actualizarPantalla(UUID, nuevoNumero.toInt())
+            }
+        }
     }
     //////// TODO: Eliminar datos
     fun eliminarDatos(Titulo: String, position: Int) {
