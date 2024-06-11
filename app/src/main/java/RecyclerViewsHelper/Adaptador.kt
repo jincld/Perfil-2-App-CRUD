@@ -4,7 +4,9 @@ import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
+import jonathan.orellana.appcrudperfil2.MainActivity
 import jonathan.orellana.appcrudperfil2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -20,9 +22,16 @@ class Adaptador(var Datos: List<DataClassTicket>): RecyclerView.Adapter<ViewHold
         notifyDataSetChanged()//notifica al recycle que hay datos nuevos
     }
 
-    fun actualizarPantalla(UUID: String, nuevoNumero: Int){
+    fun actualizarPantalla(UUID: String, nuevoTitulo: String, nuevoNumero: Int, nuevaDescripcion: String, nuevoAutor: String, nuevoEmail: String, nuevaFechaCreacion: String, nuevoEstado: String, nuevaFechaFinalizacion: String){
         val index = Datos.indexOfFirst { it.UUID == UUID }
         Datos[index].Numero = nuevoNumero.toString()
+        Datos[index].Titulo = nuevoTitulo
+        Datos[index].Descripcion = nuevaDescripcion
+        Datos[index].Autor = nuevoAutor
+        Datos[index].EmailAutor = nuevoEmail
+        Datos[index].FechaCreacion = nuevaFechaCreacion
+        Datos[index].Estado = nuevoEstado
+        Datos[index].FechaFinalizacion = nuevaFechaFinalizacion
         notifyDataSetChanged()
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -77,42 +86,91 @@ class Adaptador(var Datos: List<DataClassTicket>): RecyclerView.Adapter<ViewHold
             builder.setTitle("Editar")
             builder.setMessage("¿Desea editar el ticket?")
 
-            //Cuadro de texto
-            val cuadroTexto = EditText(context)
-            cuadroTexto.setHint(ticket.Numero)
-            cuadroTexto.setHint(ticket.Titulo)
-            builder.setView(cuadroTexto)
+            val txtNuevoNumero = EditText(context).apply {
+                setText(ticket.Numero)
+            }
 
+            val txtNuevoTitulo = EditText(context).apply {
+                setText(ticket.Titulo)
+            }
+
+            val txtNuevaDescripcion = EditText(context).apply {
+                setText(ticket.Descripcion)
+            }
+
+            val txtNuevoAutor = EditText(context).apply {
+                setText(ticket.Autor)
+            }
+
+            val txtNuevoEmail = EditText(context).apply {
+                setText(ticket.EmailAutor)
+            }
+
+            val txtNuevaFechaInicio = EditText(context).apply {
+                setText(ticket.FechaCreacion)
+            }
+
+            val txtNuevoEstado = EditText(context).apply {
+                setText(ticket.Estado)
+            }
+
+            val txtNuevaFechaFinalizacion = EditText(context).apply {
+                setText(ticket.FechaFinalizacion)
+            }
+
+           ///Cuadro de texto
+            val layout = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(txtNuevoNumero)
+                addView(txtNuevoTitulo)
+                addView(txtNuevaDescripcion)
+                addView(txtNuevoAutor)
+                addView(txtNuevoEmail)
+                addView(txtNuevaFechaInicio)
+                addView(txtNuevoEstado)
+                addView(txtNuevaFechaFinalizacion)
+            }
+            builder.setView(layout)
             //Botones
 
-            builder.setPositiveButton("si") { dialog, which ->
-                updateTicket(cuadroTexto.text.toString(), ticket.UUID.toInt(), ticket.Titulo, ticket.Descripcion, ticket.Autor, ticket.EmailAutor, ticket.FechaCreacion, ticket.Estado, ticket.FechaFinalizacion)
+            builder.setPositiveButton("Si") { dialog, which ->
+                updateTicket(layout.toString(), ticket.UUID, ticket.Numero.toInt(), ticket.Descripcion, ticket.Autor, ticket.EmailAutor, ticket.FechaCreacion, ticket.Estado, ticket.FechaFinalizacion)
             }
 
             builder.setNegativeButton("No") { dialog, which ->
                 dialog.dismiss()
             }
-
             val dialog = builder.create()
             dialog.show()
+
         }
 
     }
     ////////TODO: EDITAR DATOS
-    fun updateTicket(UUID: String, nuevoNumero: Int, nuevoTitulo: String, nuevaDescripcion: String, nuevoAutor: String, nuevoEmail: String, nuevaFechaCreacion: String, nuevoEstado: String, nuevaFechaFinalizacion: String) {
+    fun updateTicket(nuevoTitulo: String, UUID: String, nuevoNumero: Int, nuevaDescripcion: String, nuevoAutor: String, nuevoEmail: String, nuevaFechaCreacion: String, nuevoEstado: String, nuevaFechaFinalizacion: String) {
         GlobalScope.launch(Dispatchers.IO) {
             //crear objeto de clase conexion
             val objConexion = ClaseConexion().cadenaConexion()
 
             //crear variable con prepare statement
-            val updateTicket = objConexion?.prepareStatement("update tbTicket set Numero = ? Titulo = ? where UUID = ?")!!
-            updateTicket.setInt(1, nuevoNumero)
+            val updateTicket = objConexion?.prepareStatement("UPDATE tbTicket SET Numero = ?, Titulo = ?, Descripcion = ?, Autor = ?, EmailAutor = ?, FechaCreacion = ?, Estado = ?, FechaFinalizacion = ? WHERE UUID = ?")!!
+            updateTicket.setString(1, nuevoNumero.toString())
             updateTicket.setString(2, nuevoTitulo)
-            updateTicket.setString(3, UUID)
+            updateTicket.setString(3, nuevaDescripcion)
+            updateTicket.setString(4, nuevoAutor)
+            updateTicket.setString(5, nuevoEmail)
+            updateTicket.setString(6, nuevaFechaCreacion)
+            updateTicket.setString(7, nuevoEstado)
+            updateTicket.setString(8, nuevaFechaFinalizacion)
+
+            updateTicket.setString(9, UUID)
             updateTicket.executeUpdate()
 
+            val commit = objConexion.prepareStatement("commit")!!
+            commit.executeUpdate()
+
             withContext(Dispatchers.Main){
-                actualizarPantalla(UUID, nuevoNumero.toInt())
+                actualizarPantalla(UUID, nuevoTitulo.toString(), nuevoNumero.toString().toInt(), nuevaDescripcion.toString(), nuevoAutor.toString(), nuevoEmail.toString(), nuevaFechaCreacion.toString(), nuevoEstado.toString(), nuevaFechaFinalizacion.toString())
             }
         }
     }

@@ -1,0 +1,17 @@
+CREATE TABLE tbUsuario(
+UUID VARCHAR2(50),
+NombreUsuario VARCHAR2(50),
+Contrasena VARCHAR2(50)
+)
+
+CREATE TABLE tbTicket(
+UUID VARCHAR2(300),
+Numero INT,
+Titulo VARCHAR2(150),
+Descripcion VARCHAR2(100),
+Autor VARCHAR2(150),
+EmailAutor VARCHAR2(150),
+FechaCreacion VARCHAR2(150),
+Estado VARCHAR2(150),
+FechaFinalizacion VARCHAR2(150)
+)
